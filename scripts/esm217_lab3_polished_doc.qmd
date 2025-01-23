@@ -139,6 +139,16 @@ colnames(MDD_precip_weekly)[1] <- "Dist_Code"
 colnames(MDD_precip_weekly)[3] <- "Mean_Precip_m"
 ```
 
+#### Merge the precip dataset to the dengue-temperature dataset
+
+```{r}
+### merge dengue-temperature and precipitation data by floored dates:
+Dengue_Temp_Precip <- merge(Dengue_Temp, MDD_precip_weekly, 
+                            by=c("Dist_Code", "Date_floored"), 
+                            all.x=F, all.y=F)
+head(Dengue_Temp_Precip)
+```
+
 ## Data analysis
 
 #### Only Dengue cases & temperature
@@ -199,6 +209,62 @@ Den_plot4
 
 #### Adding precipitation to the model
 
+```{r}
+# standardize variables for temp & cases:
+Dengue_Temp_Precip$Mean_Temp_C_std <- zscore(Dengue_Temp_Precip$Mean_Temp_C, na.rm=T)
+hist(Dengue_Temp_Precip$Mean_Temp_C, n=50)
+hist(Dengue_Temp_Precip$Mean_Temp_C_std, n=50)
+Dengue_Temp_Precip$Cases_std <- zscore(Dengue_Temp_Precip$Cases, na.rm=T)
+hist(Dengue_Temp_Precip$Cases, n=50)
+hist(Dengue_Temp_Precip$Cases_std, n=50)
+Dengue_Temp_Precip$log.Mean_Temp_C <- log(Dengue_Temp_Precip$Mean_Temp_C)
+hist(Dengue_Temp_Precip$Mean_Temp_C, n=50)
+hist(Dengue_Temp_Precip$log.Mean_Temp_C, n=50)
+Dengue_Temp_Precip$log.Cases <- log(Dengue_Temp_Precip$Cases + 1)
+hist(Dengue_Temp_Precip$Cases, n=50)
+hist(Dengue_Temp_Precip$log.Cases, n=50)
+
+# standardize variables for precip:
+Dengue_Temp_Precip$Mean_Precip_m_std <- zscore(Dengue_Temp_Precip$Mean_Precip_m, na.rm=T)
+hist(Dengue_Temp_Precip$Mean_Precip_m, n=50)
+hist(Dengue_Temp_Precip$Mean_Precip_m_std, n=50)
+Dengue_Temp_Precip$log.Mean_Precip_m <- log(Dengue_Temp_Precip$Mean_Precip_m + 1)
+hist(Dengue_Temp_Precip$Mean_Precip_m, n=50)
+hist(Dengue_Temp_Precip$log.Mean_Precip_m, n=50)
+
+#model dengue cases by temperature and precipitation:
+head(Dengue_Temp_Precip)
+
+Dengue_lm2 <- lm(
+  log.Cases ~
+    log.Mean_Temp_C
+  + I(log.Mean_Temp_C^2)
+  + log.Mean_Precip_m
+  + I(log.Mean_Precip_m^2)
+  + factor(Year)
+  + factor(Dist_Code)
+  ,
+  data=Dengue_Temp_Precip,
+  na.action=na.exclude
+)
+
+summary(Dengue_lm2)
+crPlots(Dengue_lm2)
+plot_model(Dengue_lm2, type = "pred", 
+           terms = c("log.Mean_Temp_C", "log.Mean_Precip_m"), 
+           pred.type = "fe")
+
+#exploratory plots
+Den_plot5 <- ggplot(Dengue_Temp_Precip, aes(x=Mean_Temp_C, y=Cases, col=as.factor(District))) +
+  geom_point() + theme(legend.position="none")
+Den_plot5
+
+Den_plot6 <- ggplot(Dengue_Temp_Precip, aes(x=Mean_Precip_m, y=Cases, col=as.factor(District))) +
+  geom_point() + theme(legend.position="none")
+
+Den_plot7 <- ggplot(Dengue_Temp_Precip, aes(x=Date_floored, y=Cases, col=as.factor(District))) +
+  geom_point() + theme(legend.position="none")
+```
 
 
 
