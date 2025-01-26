@@ -161,8 +161,7 @@ hist(Dengue_Temp$log.Cases, n=50)
 
 ```{r}
 #model dengue cases by temperature:
-head(Dengue_Temp, 
-     silent=TRUE)
+#head(Dengue_Temp)
 
 Dengue_lm <- lm(
   log.Cases ~
@@ -178,15 +177,24 @@ summary(Dengue_lm)
 ```
 
 ```{r}
+#| label: fig-dengue-lm
+#| fig-cap: "Regression diagnostics for the dengue temperature model."
+
 crPlots(Dengue_lm)
 ```
 
 ```{r}
+#| label: fig-dengue-lm-pred
+#| fig-cap: "Predicted values from the dengue temperature model."
+
 plot_model(Dengue_lm, type = "pred", 
            terms = "log.Mean_Temp_C", pred.type = "fe")
 ```
 
 ```{r}
+#| label: fig-dengue-lm-pred2
+#| fig-cap: "Predicted model values for which temperature dengue peaks at (~24.6 C)."
+
 #find at what temperature dengue peaks:
 vertex <- -26.75177/(2*-4.17434)
 vertex
@@ -239,8 +247,7 @@ hist(Dengue_Temp_Precip$log.Mean_Precip_m, n=50)
 
 ```{r}
 #model dengue cases by temperature and precipitation:
-head(Dengue_Temp_Precip, 
-     silent=TRUE)
+#head(Dengue_Temp_Precip)
 
 Dengue_lm2 <- lm(
   log.Cases ~
@@ -259,16 +266,25 @@ summary(Dengue_lm2)
 ```
 
 ```{r}
+#| label: fig-dengue-lm2
+#| fig-cap: "Regression diagnostics for the dengue temperature-precipitation model."
+
 crPlots(Dengue_lm2)
 ```
 
 ```{r}
+#| label: fig-dengue-lm2-pred
+#| fig-cap: "Predicted temperature values from the dengue temperature-precipitation model."
+
 plot_model(Dengue_lm2, type = "pred", 
            terms = "log.Mean_Temp_C", 
            pred.type = "fe")
 ```
 
 ```{r}
+#| label: fig-dengue-lm2-pred2
+#| fig-cap: "Predicted precipitaton values from the dengue temperature-precipitation model."
+
 plot_model(Dengue_lm2, type = "pred", 
            terms = "log.Mean_Precip_m", 
            pred.type = "fe")
@@ -287,7 +303,28 @@ Den_plot7 <- ggplot(Dengue_Temp_Precip, aes(x=Date_floored, y=Cases, col=as.fact
   geom_point() + theme(legend.position="none")
 ```
 
-## Discussion
+## Takeaways
+
+#### Temp only model:
+
+Looking at the regression results when running a model with only temperature, a one unit increase in `log.Mean_Temp_C` increases the dependent variables, `log.Cases`, ~by 26.75 units, holding all else constant. A one unit increase in `log.Mean_Temp_C^2` decreases the dependent variable, `log.Cases`, by ~4.17 units, holding all else constant. This suggests that the effect of temperature on dengue cases is nonlinear with the following traits:
+
+- At lower temperatures, an increase in temperature has a positive effect on dengue cases.
+- At higher temperatures, the effect starts to decrease, and an increase in temperature has either a smaller effect or negative effect on dengue cases.
+
+#### Temp & precipitation model:
+  
+After repeating this analysis with precipitation added to the model, we see that both temperature variables (`log.Mean_Temp_C` & `log.Mean_Temp_C^2`) no longer have a significant effect on dengue cases. Precipitation, however, follows a similar trend to temperature in the temperature only model where: 
+
+- a one unit increase in `log.Mean_Precip_m` increases the dependent variable, `log.Cases`, by ~35.84 units, holding all else constant; and
+- a one unit increase in `log.Mean_Precip_m^2` decreases the dependent variable, `log.Cases`, by ~541.3 units, holding all else constant.
+
+This suggests that the effect of precipitation on dengue cases is also nonlinear with the following traits:
+
+- At lower precipitation levels, an increase in precipitation has a positive effect on dengue cases.
+- Beyond a certain precipitation level, the effect starts to decrease, and an increase in precipitation has either a smaller effect or negative effect on dengue cases.
+
+
 
 
 
